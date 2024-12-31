@@ -7,9 +7,20 @@ import redirectAuth from '../utils/redirect-auth';
 const API_BASE_URL = ENV.BASE_API_URL;
 export default class IndexRoute extends Route {
   @service toast;
+  @service userState;
+
   model = async () => {
+    // Using hasId() to check if ID exists
+    if (!this.userState.hasId()) {
+      this.toast.error('User ID not found');
+      return USER_STATES.DNE;
+    }
+
+    // Using id getter instead of getting from parent model
+    const userId = this.userState.id;
+
     try {
-      const response = await fetch(`${API_BASE_URL}/users/status/self`, {
+      const response = await fetch(`${API_BASE_URL}/users/status/${userId}`, {
         credentials: 'include',
       });
       const userData = await response.json();

@@ -16,6 +16,7 @@ const BASE_URL = ENV.BASE_API_URL;
 export default class IndexController extends Controller {
   @service featureFlag;
   @service toast;
+  @service userState;
   @tracked status = this.model;
   @tracked isStatusUpdating = false;
   @tracked showUserStateModal = false;
@@ -35,6 +36,10 @@ export default class IndexController extends Controller {
     return this.featureFlag.isCacheEnabled;
   }
 
+  get userId() {
+    return this.userState.id;
+  }
+
   @action async updateStatus(newStatus) {
     this.isStatusUpdating = true;
     if (!('cancelOoo' in newStatus)) {
@@ -43,14 +48,17 @@ export default class IndexController extends Controller {
       }
     }
     try {
-      await fetch(`${BASE_URL}/users/status/self?userStatusFlag=true`, {
-        method: 'PATCH',
-        body: JSON.stringify(newStatus),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      })
+      await fetch(
+        `${BASE_URL}/users/status/${this.userId}?userStatusFlag=true`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify(newStatus),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        }
+      )
         .then((response) => response.json())
         .then((responseData) => {
           if (responseData.data.currentStatus?.state) {
